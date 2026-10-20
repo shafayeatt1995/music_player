@@ -1,0 +1,43 @@
+name: xorin-player
+base: core22
+version: '1.0.0'
+summary: High-Fidelity Audio and Cinema Video Player powered by Rust
+description: |
+  Xorin Player is a blazing-fast, lightweight (~18MB RAM) desktop media player.
+  Engineered with Rust, eframe/egui, Symphonia, and VLC integration.
+  Features a 10-band equalizer, playlist support, playback speed control, 
+  and hardware-accelerated cinema video playback.
+
+grade: stable
+confinement: strict
+
+apps:
+  xorin-player:
+    command: usr/bin/xorin-player
+    extensions: [gnome]
+    plugs:
+      - home
+      - audio-playback
+      - pulseaudio
+      - alsa
+      - x11
+      - wayland
+      - opengl
+      - removable-media
+    desktop: usr/share/applications/xorin-player.desktop
+    common-id: com.shafayeatt.xorin-player
+
+parts:
+  xorin-player:
+    plugin: dump
+    source: https://github.com/shafayeatt1995/music_player/releases/download/v1.0.0/xorin-player_1.0.0_amd64.deb
+    source-type: deb
+    stage-packages:
+      - libvlc5
+      - libvlccore9
+      - vlc-plugin-base
+      - libasound2
+    organize:
+      usr/bin/xorin-player: usr/bin/xorin-player
+      usr/share/applications/xorin-player.desktop: usr/share/applications/xorin-player.desktop
+      usr/share/pixmaps/xorin-player.png: usr/share/pixmaps/xorin-player.png

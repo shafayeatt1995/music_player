@@ -15,8 +15,19 @@ brew tap shafayeatt1995/tap
 brew install --cask xorin-player
 ```
 
-### 🐧 Linux (Debian, Ubuntu, Mint, Pop!_OS)
-To install using `apt`:
+### 🐧 Linux (Snap Store)
+Available across all major Linux distributions (Ubuntu, Debian, Fedora, Manjaro, Mint, etc.):
+```bash
+sudo snap install xorin-player
+```
+
+### 📦 Linux (Flatpak / Flathub)
+```bash
+flatpak install flathub com.shafayeatt.XorinPlayer
+flatpak run com.shafayeatt.XorinPlayer
+```
+
+### 🐧 Linux (Debian, Ubuntu, Mint via APT)
 ```bash
 # Add Xorin Player APT Repository (one-time setup)
 curl -fsSL https://raw.githubusercontent.com/shafayeatt1995/music_player/main/packaging/apt/setup.sh | sudo bash

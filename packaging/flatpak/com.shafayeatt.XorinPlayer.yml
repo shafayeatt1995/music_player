@@ -1,0 +1,38 @@
+app-id: com.shafayeatt.XorinPlayer
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+sdk: org.freedesktop.Sdk
+command: xorin-player
+
+finish-args:
+  # Display & Windowing
+  - --socket=x11
+  - --socket=wayland
+  - --device=dri
+  # Audio Output
+  - --socket=pulseaudio
+  # Filesystem access for opening media files
+  - --filesystem=host:ro
+  - --filesystem=xdg-music
+  - --filesystem=xdg-videos
+  - --filesystem=xdg-download
+
+modules:
+  - name: xorin-player
+    buildsystem: simple
+    build-commands:
+      - install -D -m 755 xorin-player /app/bin/xorin-player
+      - install -D -m 644 packaging/linux/xorin-player.desktop /app/share/applications/com.shafayeatt.XorinPlayer.desktop
+      - install -D -m 644 dark-logo.png /app/share/icons/hicolor/512x512/apps/com.shafayeatt.XorinPlayer.png
+      - install -D -m 644 packaging/flatpak/com.shafayeatt.XorinPlayer.metainfo.xml /app/share/metainfo/com.shafayeatt.XorinPlayer.metainfo.xml
+    sources:
+      - type: archive
+        url: https://github.com/shafayeatt1995/music_player/releases/download/v1.0.0/xorin-player-linux-x86_64.tar.gz
+        sha256: 3fc06e5da780824cf40762cf1d5a7114c000ff9f925fdbca15f8ba5938d22359
+        only-arches: [x86_64]
+      - type: file
+        path: ../packaging/linux/xorin-player.desktop
+      - type: file
+        path: ../dark-logo.png
+      - type: file
+        path: com.shafayeatt.XorinPlayer.metainfo.xml
