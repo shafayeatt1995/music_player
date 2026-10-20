@@ -177,7 +177,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p ./release-dist
-          find ./release-artifacts -type f \( -name "*.exe" -o -name "*.zip" -o -name "*.tar.gz" -o -name "*.deb" -o -name "xorin-player-linux*" -o -name "xorin-player-macos*" \) -exec cp {} ./release-dist/ \;
+          find ./release-artifacts -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.zip" -o -name "*.tar.gz" -o -name "*.deb" -o -name "xorin-player-linux*" -o -name "xorin-player-macos*" \) -exec cp {} ./release-dist/ \;
           ls -la ./release-dist
 
       - name: Generate Release Tag & Name
@@ -223,6 +223,7 @@ jobs:
 
             | Platform / Architecture | Recommended Download | Description |
             | :--- | :--- | :--- |
+            | 🍏 **macOS Disk Image (DMG)** | [`xorin-player-macos-universal.dmg`](#) | Native drag-and-drop installer for all Macs (Apple Silicon + Intel) |
             | 🍏 **macOS Universal App** | [`xorin-player-macos-app.zip`](#) | Native `.app` bundle with full Open-With & icon support |
             | 🍏 **macOS Universal Binary** | [`xorin-player-macos-universal.zip`](#) | Standalone command-line binary for all Macs |
             | 🐧 **Debian / Ubuntu** | [`xorin-player_1.0.0_amd64.deb`](#) | Native `.deb` package (App menu & right-click Open-With) |

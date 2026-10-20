@@ -49,4 +49,22 @@ fi
 cd "$OUTPUT_DIR"
 zip -r -y "xorin-player-macos-app.zip" "$APP_NAME"
 
-echo "==> macOS App bundle created: $APP_DIR and xorin-player-macos-app.zip"
+# 5. Create native macOS Disk Image (.dmg) with Applications symlink
+if command -v hdiutil >/dev/null 2>&1; then
+    echo "==> Creating macOS Disk Image (DMG)..."
+    DMG_DIR="/tmp/xorin-dmg-source"
+    rm -rf "$DMG_DIR"
+    mkdir -p "$DMG_DIR"
+    cp -R "$APP_NAME" "$DMG_DIR/"
+    ln -s /Applications "$DMG_DIR/Applications"
+
+    rm -f "xorin-player-macos-universal.dmg"
+    hdiutil create -volname "Xorin Player" \
+        -srcfolder "$DMG_DIR" \
+        -ov -format UDZO \
+        "xorin-player-macos-universal.dmg"
+    rm -rf "$DMG_DIR"
+    echo "==> Successfully created xorin-player-macos-universal.dmg"
+fi
+
+echo "==> macOS packaging complete: $APP_DIR, xorin-player-macos-app.zip, and xorin-player-macos-universal.dmg"
