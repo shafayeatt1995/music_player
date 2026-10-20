@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>org.xorin.XorinPlayer</id>
+  <id>io.github.shafayeatt1995.XorinPlayer</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
   <name>Xorin Player</name>
@@ -19,19 +19,26 @@
       <li>Native file association and Open-With capabilities</li>
     </ul>
   </description>
-  <launchable type="desktop-id">org.xorin.XorinPlayer.desktop</launchable>
+  <launchable type="desktop-id">io.github.shafayeatt1995.XorinPlayer.desktop</launchable>
   <url type="homepage">https://github.com/shafayeatt1995/music_player</url>
   <url type="bugtracker">https://github.com/shafayeatt1995/music_player/issues</url>
+  <developer_name>Shafayeat Al-Anik</developer_name>
   <provides>
     <binary>xorin-player</binary>
     <mediatype>audio/mpeg</mediatype>
     <mediatype>audio/mp3</mediatype>
-    <mediatype>audio/flac</mediatype>
+    <mediatype>audio/x-wav</mediatype>
     <mediatype>audio/wav</mediatype>
+    <mediatype>audio/flac</mediatype>
+    <mediatype>audio/x-flac</mediatype>
     <mediatype>audio/ogg</mediatype>
     <mediatype>audio/aac</mediatype>
+    <mediatype>audio/mp4</mediatype>
+    <mediatype>audio/x-m4a</mediatype>
     <mediatype>video/mp4</mediatype>
     <mediatype>video/x-matroska</mediatype>
+    <mediatype>video/x-msvideo</mediatype>
+    <mediatype>video/quicktime</mediatype>
     <mediatype>video/webm</mediatype>
   </provides>
   <releases>
