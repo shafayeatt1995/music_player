@@ -324,7 +324,7 @@ impl VideoBackend {
 
     pub fn set_speed(&self, speed: f32) {
         if let Some(player) = *self.player.lock().unwrap() {
-            let spd = speed.clamp(0.25, 4.0);
+            let spd = speed.clamp(0.25, 8.0);
             unsafe { (self.symbols.libvlc_media_player_set_rate)(player, spd) };
         }
     }

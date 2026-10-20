@@ -50,9 +50,9 @@ pub fn render_player_bar(
     let mut action = PlayerBarAction::default();
 
     egui::Frame::canvas(ui.style())
-        .fill(Color32::from_rgb(18, 20, 26))
-        .stroke(Stroke::new(1.0_f32, Color32::from_rgb(35, 40, 52)))
-        .inner_margin(egui::Margin::symmetric(14, 10))
+        .fill(Color32::from_rgb(10, 10, 12))
+        .stroke(Stroke::NONE)
+        .inner_margin(egui::Margin::symmetric(16, 12))
         .show(ui, |ui| {
             // 1. Scrub Slider & Time Row
             ui.horizontal(|ui| {
@@ -63,6 +63,21 @@ pub fn render_player_bar(
                         .color(Color32::from_rgb(220, 220, 220)),
                 );
 
+                let time_right = if duration > 0.0 {
+                    format!("-{}", format_time((duration - position).max(0.0)))
+                } else {
+                    format_time(0.0)
+                };
+
+                let right_galley = ui.painter().layout_no_wrap(
+                    time_right.clone(),
+                    egui::FontId::monospace(13.0),
+                    Color32::from_rgb(160, 160, 160),
+                );
+                let right_width = right_galley.size().x;
+                let spacing = ui.spacing().item_spacing.x;
+                let slider_width = (ui.available_width() - right_width - spacing).max(20.0);
+
                 let max_duration = if duration > 0.0 { duration } else { 1.0 };
                 let mut current_pos = position.clamp(0.0, max_duration);
 
@@ -72,7 +87,7 @@ pub fn render_player_bar(
                         .trailing_fill(true);
 
                     let slider_resp = ui.add_sized(
-                        Vec2::new(ui.available_width() - 85.0, 16.0),
+                        Vec2::new(slider_width, 16.0),
                         slider,
                     );
 
@@ -80,33 +95,23 @@ pub fn render_player_bar(
                         action.seek_absolute = Some(current_pos);
                     }
                 } else {
-                    // Indeterminate / live stream bar
+                    // Non-seekable / empty / stopped state: show 0% flat bar and disallow clicking
                     let progress = if duration > 0.0 {
                         (position / duration).clamp(0.0, 1.0) as f32
                     } else {
-                        1.0
+                        0.0
                     };
-                    ui.add_sized(
-                        Vec2::new(ui.available_width() - 85.0, 16.0),
-                        egui::ProgressBar::new(progress).show_percentage(),
+                    ui.add_enabled(
+                        false,
+                        egui::ProgressBar::new(progress).desired_width(slider_width)
                     );
                 }
-
-                let time_right = if duration > 0.0 {
-                    format!("-{}", format_time((duration - position).max(0.0)))
-                } else {
-                    "LIVE".to_string()
-                };
 
                 ui.label(
                     RichText::new(time_right)
                         .monospace()
                         .size(13.0)
-                        .color(if duration > 0.0 {
-                            Color32::from_rgb(160, 160, 160)
-                        } else {
-                            Color32::from_rgb(255, 80, 80)
-                        }),
+                        .color(Color32::from_rgb(160, 160, 160)),
                 );
             });
 
@@ -114,14 +119,17 @@ pub fn render_player_bar(
 
             // 2. Playback Controls & Volume/Speed Row
             ui.horizontal(|ui| {
+                let btn_h = 30.0;
+
                 // Left: Shuffle & Repeat
                 let shuffle_color = if shuffle_enabled {
                     Color32::from_rgb(255, 160, 30)
                 } else {
                     Color32::from_rgb(130, 130, 140)
                 };
+                let shuffle_btn = egui::Button::new(RichText::new("🔀").size(15.0).color(shuffle_color));
                 if ui
-                    .button(RichText::new("🔀").size(15.0).color(shuffle_color))
+                    .add_sized(Vec2::new(36.0, btn_h), shuffle_btn)
                     .on_hover_text("Shuffle (Z)")
                     .clicked()
                 {
@@ -137,8 +145,9 @@ pub fn render_player_bar(
                     RepeatMode::Off => Color32::from_rgb(130, 130, 140),
                     _ => Color32::from_rgb(255, 160, 30),
                 };
+                let repeat_btn = egui::Button::new(RichText::new(repeat_label).size(13.0).color(repeat_color));
                 if ui
-                    .button(RichText::new(repeat_label).size(13.0).color(repeat_color))
+                    .add_sized(Vec2::new(65.0, btn_h), repeat_btn)
                     .on_hover_text("Repeat mode (R)")
                     .clicked()
                 {
@@ -148,11 +157,13 @@ pub fn render_player_bar(
                 ui.add_space(20.0);
 
                 // Center: Transport Buttons
-                if ui.button(RichText::new("⏮").size(16.0)).on_hover_text("Previous (P)").clicked() {
+                let prev_btn = egui::Button::new(RichText::new("⏮").size(15.0));
+                if ui.add_sized(Vec2::new(36.0, btn_h), prev_btn).on_hover_text("Previous (P)").clicked() {
                     action.previous = true;
                 }
 
-                if ui.button(RichText::new("⏪ 10s").size(12.0)).on_hover_text("Seek -10s").clicked() {
+                let seek_back_btn = egui::Button::new(RichText::new("⏪ 10s").size(12.0));
+                if ui.add_sized(Vec2::new(56.0, btn_h), seek_back_btn).on_hover_text("Seek -10s").clicked() {
                     action.seek_relative = Some(-10.0);
                 }
 
@@ -170,19 +181,22 @@ pub fn render_player_bar(
                 )
                 .fill(Color32::from_rgb(230, 110, 15));
 
-                if ui.add_sized(Vec2::new(95.0, 30.0), play_btn).on_hover_text(play_hover).clicked() {
+                if ui.add_sized(Vec2::new(95.0, btn_h), play_btn).on_hover_text(play_hover).clicked() {
                     action.toggle_play = true;
                 }
 
-                if ui.button(RichText::new("⏹").size(16.0)).on_hover_text("Stop (S)").clicked() {
+                let stop_btn = egui::Button::new(RichText::new("⏹").size(15.0));
+                if ui.add_sized(Vec2::new(36.0, btn_h), stop_btn).on_hover_text("Stop (S)").clicked() {
                     action.stop = true;
                 }
 
-                if ui.button(RichText::new("10s ⏩").size(12.0)).on_hover_text("Seek +10s").clicked() {
+                let seek_fwd_btn = egui::Button::new(RichText::new("10s ⏩").size(12.0));
+                if ui.add_sized(Vec2::new(56.0, btn_h), seek_fwd_btn).on_hover_text("Seek +10s").clicked() {
                     action.seek_relative = Some(10.0);
                 }
 
-                if ui.button(RichText::new("⏭").size(16.0)).on_hover_text("Next (N)").clicked() {
+                let next_btn = egui::Button::new(RichText::new("⏭").size(15.0));
+                if ui.add_sized(Vec2::new(36.0, btn_h), next_btn).on_hover_text("Next (N)").clicked() {
                     action.next = true;
                 }
 
@@ -190,17 +204,45 @@ pub fn render_player_bar(
 
                 // Right: Speed & Volume Controls
                 ui.label(RichText::new("Speed:").size(12.0));
-                let mut current_speed = speed;
-                let speed_slider = Slider::new(&mut current_speed, 0.25..=4.0)
-                    .step_by(0.05)
-                    .show_value(false);
 
-                if ui.add_sized(Vec2::new(75.0, 16.0), speed_slider).changed() {
-                    action.speed_changed = Some(current_speed);
+                let minus_spd_btn = egui::Button::new(RichText::new("➖").size(11.0));
+                if ui
+                    .add_sized(Vec2::new(26.0, btn_h), minus_spd_btn)
+                    .on_hover_text("Decrease speed (-0.10x)")
+                    .clicked()
+                {
+                    let new_spd = ((speed - 0.10) * 100.0).round() / 100.0;
+                    action.speed_changed = Some(new_spd.clamp(0.25, 8.0));
                 }
 
+                let mut current_speed = speed;
+                let speed_slider = Slider::new(&mut current_speed, 0.25..=8.0)
+                    .step_by(0.05)
+                    .show_value(false)
+                    .trailing_fill(true);
+
+                if ui.add_sized(Vec2::new(75.0, 16.0), speed_slider).changed() {
+                    let snapped = if (current_speed - 1.0).abs() < 0.03 {
+                        1.0
+                    } else {
+                        (current_speed * 20.0).round() / 20.0
+                    };
+                    action.speed_changed = Some(snapped);
+                }
+
+                let plus_spd_btn = egui::Button::new(RichText::new("➕").size(11.0));
                 if ui
-                    .button(RichText::new(format!("{:.2}x", speed)).size(11.0))
+                    .add_sized(Vec2::new(26.0, btn_h), plus_spd_btn)
+                    .on_hover_text("Increase speed (+0.10x)")
+                    .clicked()
+                {
+                    let new_spd = ((speed + 0.10) * 100.0).round() / 100.0;
+                    action.speed_changed = Some(new_spd.clamp(0.25, 8.0));
+                }
+
+                let speed_btn = egui::Button::new(RichText::new(format!("{:.2}x", speed)).size(11.0));
+                if ui
+                    .add_sized(Vec2::new(42.0, btn_h), speed_btn)
                     .on_hover_text("Click to reset speed to 1.0x")
                     .clicked()
                 {
@@ -220,7 +262,12 @@ pub fn render_player_bar(
                     "🔊"
                 };
 
-                if ui.button(RichText::new(vol_icon).size(15.0)).on_hover_text("Toggle Mute (M)").clicked() {
+                let mute_btn = egui::Button::new(RichText::new(vol_icon).size(15.0));
+                if ui
+                    .add_sized(Vec2::new(32.0, btn_h), mute_btn)
+                    .on_hover_text("Toggle Mute (M)")
+                    .clicked()
+                {
                     action.toggle_mute = true;
                 }
 

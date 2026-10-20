@@ -17,68 +17,58 @@ pub struct EqPreset {
 
 pub const EQ_PRESETS: &[EqPreset] = &[
     EqPreset {
-        name: "Flat",
-        bands: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-        preamp: 0.0,
+        name: "Poweramp: Deep Bass & Clear Highs",
+        bands: [6.5, 5.0, 3.2, 0.5, -0.5, 0.0, 1.8, 3.8, 5.5, 6.2],
+        preamp: -1.5,
+    },
+    EqPreset {
+        name: "Poweramp: Bass Boost",
+        bands: [8.0, 6.5, 4.5, 2.0, 0.0, -0.5, 0.0, 1.0, 2.5, 3.0],
+        preamp: -2.0,
+    },
+    EqPreset {
+        name: "Poweramp: Vocal & Clarity",
+        bands: [-1.5, -0.5, 0.0, 1.5, 3.2, 3.8, 3.0, 2.2, 1.5, 0.5],
+        preamp: -0.5,
     },
     EqPreset {
         name: "Rock",
-        bands: [4.8, 3.2, -1.6, -2.4, -0.8, 2.4, 4.0, 5.6, 6.4, 6.4],
-        preamp: 0.0,
-    },
-    EqPreset {
-        name: "Pop",
-        bands: [-1.6, 1.2, 3.6, 4.2, 3.0, -1.0, -1.5, -1.5, -1.0, -1.0],
-        preamp: 0.0,
-    },
-    EqPreset {
-        name: "Jazz",
-        bands: [3.2, 2.4, 1.2, 1.6, -1.6, -1.6, 0.0, 1.6, 2.8, 3.5],
-        preamp: 0.0,
-    },
-    EqPreset {
-        name: "Classical",
-        bands: [4.0, 3.0, 2.5, 2.0, -1.5, -1.5, 0.0, 2.0, 3.0, 3.5],
-        preamp: 0.0,
-    },
-    EqPreset {
-        name: "Full Bass",
-        bands: [7.0, 6.0, 5.5, 3.0, 1.0, 0.0, -1.5, -3.0, -4.0, -4.5],
+        bands: [5.0, 3.8, -1.0, -2.0, -0.5, 2.2, 3.8, 5.2, 6.0, 6.0],
         preamp: -1.0,
     },
     EqPreset {
-        name: "Full Treble",
-        bands: [-6.0, -5.5, -5.0, -2.5, 1.5, 4.0, 6.5, 7.5, 8.5, 9.0],
+        name: "Pop / Modern Beats",
+        bands: [4.0, 3.0, 1.5, 2.0, 2.5, -0.5, -1.0, 1.2, 3.5, 4.0],
         preamp: -1.0,
     },
     EqPreset {
-        name: "Full Bass & Treble",
-        bands: [6.0, 4.5, 0.0, -3.0, -2.5, 1.0, 4.0, 6.5, 7.5, 8.0],
+        name: "Hip-Hop / Heavy Bass",
+        bands: [7.5, 6.0, 3.5, 1.0, -1.0, -0.5, 1.5, 2.8, 4.0, 4.5],
+        preamp: -2.0,
+    },
+    EqPreset {
+        name: "EDM / Electronic",
+        bands: [6.5, 5.0, 1.5, -1.5, -1.0, 1.0, 3.5, 5.0, 5.5, 5.0],
+        preamp: -1.5,
+    },
+    EqPreset {
+        name: "Jazz & Acoustic",
+        bands: [3.5, 2.5, 1.5, 1.8, -1.0, -1.0, 0.5, 1.8, 3.0, 3.8],
+        preamp: -0.5,
+    },
+    EqPreset {
+        name: "Classical / Symphony",
+        bands: [4.0, 3.0, 2.0, 1.5, -1.0, -1.0, 0.5, 2.2, 3.2, 4.0],
+        preamp: -0.5,
+    },
+    EqPreset {
+        name: "Headphones Audiophile",
+        bands: [4.5, 3.0, 1.0, -1.0, -1.2, 0.5, 2.0, 3.5, 5.0, 6.0],
         preamp: -1.0,
     },
     EqPreset {
-        name: "Club / Dance",
-        bands: [5.0, 4.0, 2.0, 0.0, 0.0, 2.5, 4.0, 4.0, 3.0, 0.0],
-        preamp: 0.0,
-    },
-    EqPreset {
-        name: "Vocal / Acoustic",
-        bands: [-2.0, -1.0, -0.5, 1.5, 3.5, 3.5, 2.0, 1.0, 0.0, -1.5],
-        preamp: 0.0,
-    },
-    EqPreset {
-        name: "Techno / Electronic",
-        bands: [5.5, 4.5, 0.0, -2.5, -2.0, 0.0, 4.5, 6.0, 6.0, 5.0],
-        preamp: 0.0,
-    },
-    EqPreset {
-        name: "Reggae",
-        bands: [0.0, 0.0, -0.5, -4.0, 0.0, 4.5, 4.5, 2.5, 0.0, 0.0],
-        preamp: 0.0,
-    },
-    EqPreset {
-        name: "Laptop / Headphones",
-        bands: [3.5, 7.0, 4.0, -2.0, -1.5, 1.0, 3.0, 5.5, 7.0, 7.5],
+        name: "Flat (Studio Reference)",
+        bands: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
         preamp: 0.0,
     },
 ];
@@ -127,7 +117,7 @@ impl BiquadFilter {
         }
 
         let w0 = 2.0 * PI * (center_freq / sample_rate).clamp(0.0001, 0.499);
-        let alpha = (w0.sin()) / (2.0 * q);
+        let alpha = w0.sin() / (2.0 * q.max(0.1));
         let a = 10.0f32.powf(gain_db / 40.0);
 
         let cos_w0 = w0.cos();
@@ -137,6 +127,70 @@ impl BiquadFilter {
         let a0 = 1.0 + alpha / a;
         let a1 = -2.0 * cos_w0;
         let a2 = 1.0 - alpha / a;
+
+        let inv_a0 = 1.0 / a0;
+        self.b0 = b0 * inv_a0;
+        self.b1 = b1 * inv_a0;
+        self.b2 = b2 * inv_a0;
+        self.a1 = a1 * inv_a0;
+        self.a2 = a2 * inv_a0;
+    }
+
+    pub fn update_low_shelf(&mut self, sample_rate: f32, cutoff_freq: f32, gain_db: f32, s: f32) {
+        if gain_db.abs() < 0.01 {
+            self.b0 = 1.0;
+            self.b1 = 0.0;
+            self.b2 = 0.0;
+            self.a1 = 0.0;
+            self.a2 = 0.0;
+            return;
+        }
+
+        let a = 10.0f32.powf(gain_db / 40.0);
+        let w0 = 2.0 * PI * (cutoff_freq / sample_rate).clamp(0.0001, 0.499);
+        let cos_w0 = w0.cos();
+        let sin_w0 = w0.sin();
+        let alpha = (sin_w0 / 2.0) * ((a + 1.0 / a) * (1.0 / s - 1.0) + 2.0).max(0.0).sqrt();
+        let two_sqrt_a_alpha = 2.0 * a.sqrt() * alpha;
+
+        let b0 = a * ((a + 1.0) - (a - 1.0) * cos_w0 + two_sqrt_a_alpha);
+        let b1 = 2.0 * a * ((a - 1.0) - (a + 1.0) * cos_w0);
+        let b2 = a * ((a + 1.0) - (a - 1.0) * cos_w0 - two_sqrt_a_alpha);
+        let a0 = (a + 1.0) + (a - 1.0) * cos_w0 + two_sqrt_a_alpha;
+        let a1 = -2.0 * ((a - 1.0) + (a + 1.0) * cos_w0);
+        let a2 = (a + 1.0) + (a - 1.0) * cos_w0 - two_sqrt_a_alpha;
+
+        let inv_a0 = 1.0 / a0;
+        self.b0 = b0 * inv_a0;
+        self.b1 = b1 * inv_a0;
+        self.b2 = b2 * inv_a0;
+        self.a1 = a1 * inv_a0;
+        self.a2 = a2 * inv_a0;
+    }
+
+    pub fn update_high_shelf(&mut self, sample_rate: f32, cutoff_freq: f32, gain_db: f32, s: f32) {
+        if gain_db.abs() < 0.01 {
+            self.b0 = 1.0;
+            self.b1 = 0.0;
+            self.b2 = 0.0;
+            self.a1 = 0.0;
+            self.a2 = 0.0;
+            return;
+        }
+
+        let a = 10.0f32.powf(gain_db / 40.0);
+        let w0 = 2.0 * PI * (cutoff_freq / sample_rate).clamp(0.0001, 0.499);
+        let cos_w0 = w0.cos();
+        let sin_w0 = w0.sin();
+        let alpha = (sin_w0 / 2.0) * ((a + 1.0 / a) * (1.0 / s - 1.0) + 2.0).max(0.0).sqrt();
+        let two_sqrt_a_alpha = 2.0 * a.sqrt() * alpha;
+
+        let b0 = a * ((a + 1.0) + (a - 1.0) * cos_w0 + two_sqrt_a_alpha);
+        let b1 = -2.0 * a * ((a - 1.0) + (a + 1.0) * cos_w0);
+        let b2 = a * ((a + 1.0) + (a - 1.0) * cos_w0 - two_sqrt_a_alpha);
+        let a0 = (a + 1.0) - (a - 1.0) * cos_w0 + two_sqrt_a_alpha;
+        let a1 = 2.0 * ((a - 1.0) - (a + 1.0) * cos_w0);
+        let a2 = (a + 1.0) - (a - 1.0) * cos_w0 - two_sqrt_a_alpha;
 
         let inv_a0 = 1.0 / a0;
         self.b0 = b0 * inv_a0;
@@ -217,12 +271,34 @@ impl Equalizer {
         if band_idx < 10 {
             let clamped = gain_db.clamp(-20.0, 20.0);
             self.bands_db[band_idx] = clamped;
-            self.filters[band_idx].update_peaking(
-                self.sample_rate,
-                EQ_FREQUENCIES[band_idx],
-                clamped,
-                1.414,
-            );
+            self.update_filter_band(band_idx);
+        }
+    }
+
+    fn update_filter_band(&mut self, i: usize) {
+        let gain = self.bands_db[i];
+        let freq = EQ_FREQUENCIES[i];
+
+        if i == 0 {
+            // Band 0 (31 Hz): Low Shelf for Poweramp deep sub-bass response
+            self.filters[i].update_low_shelf(self.sample_rate, 45.0, gain, 0.9);
+        } else if i == 9 {
+            // Band 9 (16 kHz): High Shelf for silky airy highs
+            self.filters[i].update_high_shelf(self.sample_rate, 14000.0, gain, 0.9);
+        } else {
+            // Bands 1-8: Peaking with tuned Q factors for optimal musical overlap
+            let q = match i {
+                1 => 1.2, // 62Hz bass punch
+                2 => 1.3, // 125Hz warmth
+                3 => 1.4, // 250Hz low-mid body
+                4 => 1.4, // 500Hz mid
+                5 => 1.4, // 1kHz vocal presence
+                6 => 1.3, // 2kHz upper mid
+                7 => 1.2, // 4kHz presence
+                8 => 1.1, // 8kHz brilliance
+                _ => 1.414,
+            };
+            self.filters[i].update_peaking(self.sample_rate, freq, gain, q);
         }
     }
 
@@ -237,8 +313,8 @@ impl Equalizer {
     }
 
     pub fn recalculate(&mut self) {
-        for (i, &freq) in EQ_FREQUENCIES.iter().enumerate() {
-            self.filters[i].update_peaking(self.sample_rate, freq, self.bands_db[i], 1.414);
+        for i in 0..10 {
+            self.update_filter_band(i);
         }
     }
 
@@ -258,7 +334,7 @@ impl Equalizer {
         let preamp_gain = 10.0f32.powf(self.preamp_db / 20.0);
         sample *= preamp_gain;
 
-        // Cascade 10 peaking filters
+        // Cascade 10 precision filters
         for filter in &mut self.filters {
             sample = filter.process_sample(ch, sample);
         }
@@ -267,13 +343,13 @@ impl Equalizer {
     }
 }
 
-/// Volume, Panning, and Soft-Clipping Limiter
+/// Volume, Panning, and Studio Soft-Clipping Limiter (Poweramp-style warm analog limiter)
 #[derive(Clone, Debug)]
 pub struct MasterDsp {
     pub volume: f32, // 0.0 to 2.0 (0% to 200%)
     pub pan: f32,    // -1.0 (Left) to +1.0 (Right)
     pub muted: bool,
-    pub speed: f32,  // 0.25 to 4.0
+    pub speed: f32,  // 0.25 to 8.0
 }
 
 impl Default for MasterDsp {
@@ -312,13 +388,20 @@ impl MasterDsp {
         let mut out_l = left * vol * left_gain;
         let mut out_r = right * vol * right_gain;
 
-        // VLC-style soft saturation limiter if volume or preamp drives past +/- 1.0
-        if out_l > 1.0 || out_l < -1.0 {
-            out_l = out_l.tanh();
+        // Studio warm analog soft-knee saturation: preserves dynamic punch without harsh clipping
+        #[inline]
+        fn soft_clip(x: f32) -> f32 {
+            if x > 0.95 {
+                0.95 + 0.05 * ((x - 0.95) / 0.05).tanh()
+            } else if x < -0.95 {
+                -0.95 + 0.05 * ((x + 0.95) / 0.05).tanh()
+            } else {
+                x
+            }
         }
-        if out_r > 1.0 || out_r < -1.0 {
-            out_r = out_r.tanh();
-        }
+
+        out_l = soft_clip(out_l);
+        out_r = soft_clip(out_r);
 
         (out_l, out_r)
     }

@@ -13,7 +13,7 @@ use crate::ui::radio_view::{render_radio_view, RadioUiState};
 use crate::ui::video_view::{render_video_view, VideoUiState};
 use crate::utils::config::AppConfig;
 use crate::video::VideoBackend;
-use egui::{Color32, Key, RichText};
+use egui::{Color32, ColorImage, Key, RichText, Stroke, TextureHandle};
 use std::path::PathBuf;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -57,6 +57,7 @@ pub struct XorinApp {
     active_metadata: Option<TrackMetadata>,
     active_lyrics: Option<Lyrics>,
     is_video_mode: bool,
+    logo_texture: Option<TextureHandle>,
     // Sub-UI states
     now_playing_state: NowPlayingUiState,
     video_state: VideoUiState,
@@ -74,20 +75,88 @@ pub struct XorinApp {
 
 impl XorinApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        // Set visual styling
+        // Set modern shadcn-style dark visual styling
         let mut visuals = egui::Visuals::dark();
-        visuals.override_text_color = Some(Color32::from_rgb(230, 235, 245));
-        visuals.panel_fill = Color32::from_rgb(14, 16, 22);
-        visuals.window_fill = Color32::from_rgb(18, 20, 26);
-        visuals.selection.bg_fill = Color32::from_rgb(235, 115, 20);
-        visuals.widgets.active.bg_fill = Color32::from_rgb(255, 130, 30);
-        visuals.widgets.hovered.bg_fill = Color32::from_rgb(45, 52, 68);
-        visuals.widgets.inactive.bg_fill = Color32::from_rgb(26, 30, 40);
+        visuals.override_text_color = Some(Color32::from_rgb(250, 250, 250)); // shadcn foreground
+        visuals.panel_fill = Color32::from_rgb(10, 10, 12); // shadcn background (clean obsidian black)
+        visuals.window_fill = Color32::from_rgb(18, 18, 22); // shadcn popover / card
+        visuals.extreme_bg_color = Color32::from_rgb(14, 14, 18);
+        visuals.faint_bg_color = Color32::from_rgb(24, 24, 28);
+
+        // Window & Menu / Popover (Shadcn Popover / Dropdown)
+        visuals.window_stroke = Stroke::new(1.0_f32, Color32::from_rgb(39, 39, 45)); // border
+        visuals.window_corner_radius = egui::CornerRadius::same(6);
+        visuals.menu_corner_radius = egui::CornerRadius::same(6);
+        visuals.popup_shadow = egui::epaint::Shadow {
+            offset: [0, 4],
+            blur: 16,
+            spread: 0,
+            color: Color32::from_rgba_premultiplied(0, 0, 0, 180),
+        };
+
+        // Selection / Accent (Clean Orange brand accent preserved)
+        visuals.selection.bg_fill = Color32::from_rgb(249, 115, 22); // primary (amber/orange)
+        visuals.selection.stroke = Stroke::new(1.0_f32, Color32::from_rgb(251, 146, 60));
+
+        // Widgets: Inactive (shadcn secondary / outline)
+        visuals.widgets.inactive.bg_fill = Color32::from_rgb(18, 18, 22);
+        visuals.widgets.inactive.weak_bg_fill = Color32::from_rgb(18, 18, 22);
+        visuals.widgets.inactive.bg_stroke = Stroke::new(1.0_f32, Color32::from_rgb(39, 39, 45));
+        visuals.widgets.inactive.corner_radius = egui::CornerRadius::same(6);
+        visuals.widgets.inactive.fg_stroke = Stroke::new(1.0_f32, Color32::from_rgb(220, 220, 225));
+
+        // Widgets: Hovered (shadcn hover state)
+        visuals.widgets.hovered.bg_fill = Color32::from_rgb(28, 28, 34);
+        visuals.widgets.hovered.weak_bg_fill = Color32::from_rgb(28, 28, 34);
+        visuals.widgets.hovered.bg_stroke = Stroke::new(1.0_f32, Color32::from_rgb(55, 55, 65));
+        visuals.widgets.hovered.corner_radius = egui::CornerRadius::same(6);
+        visuals.widgets.hovered.fg_stroke = Stroke::new(1.0_f32, Color32::from_rgb(255, 255, 255));
+
+        // Widgets: Active / Clicked
+        visuals.widgets.active.bg_fill = Color32::from_rgb(34, 34, 42);
+        visuals.widgets.active.weak_bg_fill = Color32::from_rgb(34, 34, 42);
+        visuals.widgets.active.bg_stroke = Stroke::new(1.0_f32, Color32::from_rgb(249, 115, 22));
+        visuals.widgets.active.corner_radius = egui::CornerRadius::same(6);
+        visuals.widgets.active.fg_stroke = Stroke::new(1.0_f32, Color32::from_rgb(255, 255, 255));
+
+        // Widgets: Noninteractive
+        visuals.widgets.noninteractive.bg_fill = Color32::from_rgb(14, 14, 18);
+        visuals.widgets.noninteractive.bg_stroke = Stroke::new(1.0_f32, Color32::from_rgb(28, 28, 34));
+        visuals.widgets.noninteractive.corner_radius = egui::CornerRadius::same(6);
+        visuals.widgets.noninteractive.fg_stroke = Stroke::new(1.0_f32, Color32::from_rgb(161, 161, 170)); // muted-foreground
+
+        // Make all clickable buttons/interactive elements show the pointing hand cursor
+        visuals.interact_cursor = Some(egui::CursorIcon::PointingHand);
+
         cc.egui_ctx.set_visuals(visuals);
+
+        // Shadcn UI Spacing & Interaction adjustments
+        let mut style = (*cc.egui_ctx.style()).clone();
+        style.spacing.button_padding = egui::vec2(10.0, 6.0);
+        style.spacing.item_spacing = egui::vec2(8.0, 8.0);
+        style.spacing.combo_width = 110.0;
+        style.interaction.show_tooltips_only_when_still = false;
+        cc.egui_ctx.set_style(style);
 
         let config = AppConfig::load();
         let audio_backend = AudioBackend::new().ok();
         let video_backend = VideoBackend::new(None).ok();
+
+        // Load dark-logo.png into TextureHandle
+        let logo_texture = {
+            let logo_bytes = include_bytes!("../dark-logo.png");
+            if let Ok(img) = image::load_from_memory(logo_bytes) {
+                let rgba = img.to_rgba8();
+                let (w, h) = rgba.dimensions();
+                let color_img = ColorImage::from_rgba_unmultiplied(
+                    [w as usize, h as usize],
+                    rgba.as_flat_samples().as_slice(),
+                );
+                Some(cc.egui_ctx.load_texture("dark_logo", color_img, egui::TextureOptions::LINEAR))
+            } else {
+                None
+            }
+        };
 
         let app = Self {
             audio: audio_backend,
@@ -105,6 +174,7 @@ impl XorinApp {
             active_metadata: None,
             active_lyrics: None,
             is_video_mode: false,
+            logo_texture,
             now_playing_state: NowPlayingUiState::default(),
             video_state: VideoUiState::default(),
             equalizer_state: EqualizerUiState {
@@ -319,7 +389,7 @@ impl XorinApp {
     }
 
     pub fn set_speed(&mut self, spd: f32) {
-        self.speed = spd.clamp(0.25, 4.0);
+        self.speed = spd.clamp(0.25, 8.0);
         if let Some(ref b) = self.audio {
             b.send_command(AudioCommand::SetSpeed(self.speed));
         }
@@ -414,6 +484,7 @@ impl XorinApp {
             // Escape key exits video fullscreen
             if i.key_pressed(Key::Escape) && self.video_state.is_fullscreen {
                 self.video_state.is_fullscreen = false;
+                ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(false));
             }
         });
     }
@@ -510,28 +581,39 @@ impl eframe::App for XorinApp {
         self.peak_bars = peaks;
 
         let is_fullscreen_video = self.video_state.is_fullscreen && self.current_tab == AppTab::Video;
+        ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(is_fullscreen_video));
 
         // 1. Top Header & Navigation Tabs (hidden in fullscreen video)
         if !is_fullscreen_video {
             egui::TopBottomPanel::top("xorin_header")
                 .frame(
                     egui::Frame::NONE
-                        .fill(Color32::from_rgb(18, 20, 26))
-                        .inner_margin(egui::Margin::symmetric(14, 8)),
+                        .fill(Color32::from_rgb(10, 10, 12))
+                        .stroke(Stroke::new(1.0_f32, Color32::from_rgb(39, 39, 45)))
+                        .inner_margin(egui::Margin::symmetric(16, 10)),
                 )
                 .show(ctx, |ui| {
                     ui.horizontal(|ui| {
-                        // Logo & App Name
-                        ui.label(
-                            RichText::new("XORIN PLAYER")
-                                .strong()
-                                .size(17.0)
-                                .color(Color32::from_rgb(255, 150, 25)),
+                        // Topbar Logo (using dark-logo.png)
+                        if let Some(ref logo) = self.logo_texture {
+                            ui.image((logo.id(), egui::vec2(100.0, 29.0)));
+                        } else {
+                            ui.label(
+                                RichText::new("XORIN")
+                                    .strong()
+                                    .size(16.0)
+                                    .color(Color32::from_rgb(250, 250, 250)),
                         );
+                            ui.label(
+                                RichText::new("PLAYER")
+                                    .size(12.0)
+                                    .color(Color32::from_rgb(249, 115, 22)),
+                            );
+                        }
 
                         ui.add_space(20.0);
 
-                        // Navigation Tabs
+                        // Navigation Tabs (Shadcn Tabs list style with orange active base)
                         let tabs = [
                             AppTab::NowPlaying,
                             AppTab::Video,
@@ -545,18 +627,35 @@ impl eframe::App for XorinApp {
                         for tab in tabs {
                             let is_active = self.current_tab == tab;
                             let text = if is_active {
-                                RichText::new(tab.label()).strong().color(Color32::from_rgb(255, 170, 40))
+                                RichText::new(tab.label())
+                                    .strong()
+                                    .color(Color32::WHITE)
                             } else {
-                                RichText::new(tab.label()).color(Color32::from_rgb(160, 165, 180))
+                                RichText::new(tab.label())
+                                    .color(Color32::from_rgb(161, 161, 170))
                             };
 
-                            if ui.selectable_label(is_active, text).clicked() {
+                            let (fill_color, border_stroke) = if is_active {
+                                (
+                                    Color32::from_rgb(249, 115, 22), // Base orange active background
+                                    Stroke::new(1.0_f32, Color32::from_rgb(251, 146, 60)),
+                                )
+                            } else {
+                                (Color32::TRANSPARENT, Stroke::NONE)
+                            };
+
+                            let tab_btn = egui::Button::new(text)
+                                .fill(fill_color)
+                                .stroke(border_stroke)
+                                .corner_radius(egui::CornerRadius::same(6));
+
+                            if ui.add(tab_btn).clicked() {
                                 self.current_tab = tab;
                             }
-                            ui.add_space(4.0);
+                            ui.add_space(3.0);
                         }
 
-                        // Status Indicator on the right
+                        // Status Indicator on the right (Shadcn Badge style)
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                             let status_text = match self.playback_state {
                                 PlaybackState::Playing => "● Playing",
@@ -565,10 +664,10 @@ impl eframe::App for XorinApp {
                                 PlaybackState::Stopped => "■ Stopped",
                             };
                             let status_color = match self.playback_state {
-                                PlaybackState::Playing => Color32::from_rgb(80, 220, 120),
-                                PlaybackState::Paused => Color32::from_rgb(255, 200, 60),
-                                PlaybackState::Buffering => Color32::from_rgb(100, 180, 255),
-                                PlaybackState::Stopped => Color32::from_rgb(120, 120, 130),
+                                PlaybackState::Playing => Color32::from_rgb(34, 197, 94),
+                                PlaybackState::Paused => Color32::from_rgb(234, 179, 8),
+                                PlaybackState::Buffering => Color32::from_rgb(59, 130, 246),
+                                PlaybackState::Stopped => Color32::from_rgb(113, 113, 122),
                             };
                             ui.label(RichText::new(status_text).size(12.0).color(status_color));
                         });
@@ -577,7 +676,11 @@ impl eframe::App for XorinApp {
 
             // 2. Bottom Player Bar
             egui::TopBottomPanel::bottom("xorin_bottom_bar")
-                .frame(egui::Frame::NONE.fill(Color32::from_rgb(14, 16, 22)))
+                .frame(
+                    egui::Frame::NONE
+                        .fill(Color32::from_rgb(10, 10, 12))
+                        .stroke(Stroke::new(1.0_f32, Color32::from_rgb(39, 39, 45)))
+                )
                 .show(ctx, |ui| {
                     let action = render_player_bar(
                         ui,
@@ -629,7 +732,13 @@ impl eframe::App for XorinApp {
         }
 
         // 3. Central Content Panel according to active Tab
-        egui::CentralPanel::default().show(ctx, |ui| {
+        let panel_frame = if is_fullscreen_video {
+            egui::Frame::NONE.fill(Color32::from_rgb(8, 9, 12)).inner_margin(0)
+        } else {
+            egui::Frame::central_panel(&ctx.style())
+        };
+
+        egui::CentralPanel::default().frame(panel_frame).show(ctx, |ui| {
             // Display error toast / banner if any
             let mut dismiss_err = false;
             if let Some(ref err) = self.error_message {

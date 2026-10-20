@@ -280,7 +280,7 @@ impl AudioWorker {
             }
             AudioCommand::SetVolume(v) => self.dsp.volume = v,
             AudioCommand::SetPan(p) => self.dsp.pan = p,
-            AudioCommand::SetSpeed(s) => self.dsp.speed = s.clamp(0.25, 4.0),
+            AudioCommand::SetSpeed(s) => self.dsp.speed = s.clamp(0.25, 8.0),
             AudioCommand::SetMute(m) => self.dsp.muted = m,
             AudioCommand::SetEqEnabled(en) => self.equalizer.enabled = en,
             AudioCommand::SetEqPreamp(preamp) => self.equalizer.set_preamp(preamp),

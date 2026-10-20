@@ -32,14 +32,23 @@ pub fn render_equalizer_view(
             }
 
             ui.add_space(20.0);
-            ui.label(RichText::new("Preset:").strong());
+            ui.label(RichText::new("Preset:").size(13.0).color(Color32::from_rgb(161, 161, 170)));
 
             egui::ComboBox::from_id_salt("eq_preset_select")
-                .selected_text(&state.selected_preset)
+                .selected_text(RichText::new(&state.selected_preset).color(Color32::from_rgb(250, 250, 250)))
+                .width(240.0)
                 .show_ui(ui, |ui| {
                     for preset in EQ_PRESETS {
+                        let is_sel = state.selected_preset == preset.name;
                         if ui
-                            .selectable_label(state.selected_preset == preset.name, preset.name)
+                            .selectable_label(
+                                is_sel,
+                                RichText::new(preset.name).color(if is_sel {
+                                    Color32::from_rgb(250, 250, 250)
+                                } else {
+                                    Color32::from_rgb(200, 200, 210)
+                                }),
+                            )
                             .clicked()
                         {
                             state.selected_preset = preset.name.to_string();
@@ -50,8 +59,8 @@ pub fn render_equalizer_view(
                     }
                 });
 
-            ui.add_space(15.0);
-            if ui.button("⟲ Reset Flat").clicked() {
+            ui.add_space(12.0);
+            if ui.button(RichText::new("⟲ Reset Flat").size(12.0)).clicked() {
                 state.selected_preset = "Flat".to_string();
                 state.preamp = 0.0;
                 state.bands = [0.0; 10];

@@ -194,12 +194,25 @@ pub fn render_video_view(
         Color32::WHITE,
     );
 
+    // Calculate overlay controls rect to avoid triggering video click when clicking overlay controls
+    let overlay_height = 80.0;
+    let overlay_rect = Rect::from_min_max(
+        Pos2::new(available_rect.min.x + 12.0, available_rect.max.y - overlay_height - 12.0),
+        Pos2::new(available_rect.max.x - 12.0, available_rect.max.y - 12.0),
+    );
+
     // Interactive response over the video
     let resp = ui.allocate_rect(available_rect, Sense::click());
-    if resp.double_clicked() {
-        state.is_fullscreen = !state.is_fullscreen;
-    } else if resp.clicked() {
-        action.toggle_play = true;
+    let pointer_over_overlay = controls_visible && ui.input(|i| {
+        i.pointer.hover_pos().map_or(false, |pos| overlay_rect.contains(pos))
+    });
+
+    if !pointer_over_overlay {
+        if resp.double_clicked() {
+            state.is_fullscreen = !state.is_fullscreen;
+        } else if resp.clicked() {
+            action.toggle_play = true;
+        }
     }
 
     // Keyboard shortcut for Fullscreen
@@ -280,16 +293,16 @@ fn render_overlay_controls(
         Pos2::new(bounds.max.x - 12.0, bounds.max.y - 12.0),
     );
 
-    // Draw background translucent blur panel
+    // Draw background translucent blur panel (Shadcn style floating card)
     ui.painter().rect_filled(
         overlay_rect,
         CornerRadius::same(8),
-        Color32::from_rgba_premultiplied(14, 16, 22, 220),
+        Color32::from_rgba_premultiplied(10, 10, 12, 230),
     );
     ui.painter().rect_stroke(
         overlay_rect,
         CornerRadius::same(8),
-        Stroke::new(1.0_f32, Color32::from_rgba_premultiplied(50, 55, 75, 180)),
+        Stroke::new(1.0_f32, Color32::from_rgb(39, 39, 45)),
         StrokeKind::Inside,
     );
 
@@ -301,12 +314,23 @@ fn render_overlay_controls(
 
     // 1. Scrubber Slider & Timing
     ui_child.horizontal(|ui| {
-        ui.label(
-            RichText::new(format_time(position))
-                .monospace()
-                .size(12.0)
-                .color(Color32::from_rgb(220, 220, 220)),
+        let current_time_text = RichText::new(format_time(position))
+            .monospace()
+            .size(12.0)
+            .color(Color32::from_rgb(220, 220, 220));
+        ui.label(current_time_text);
+
+        let duration_text = RichText::new(format_time(duration))
+            .monospace()
+            .size(12.0)
+            .color(Color32::from_rgb(160, 165, 180));
+        let duration_galley = ui.painter().layout_no_wrap(
+            format_time(duration),
+            egui::FontId::monospace(12.0),
+            Color32::from_rgb(160, 165, 180),
         );
+        let right_label_width = duration_galley.size().x;
+        let spacing = ui.spacing().item_spacing.x;
 
         let max_duration = if duration > 0.0 { duration } else { 1.0 };
         let mut cur_pos = position.clamp(0.0, max_duration);
@@ -315,17 +339,13 @@ fn render_overlay_controls(
             .show_value(false)
             .trailing_fill(true);
 
-        let resp = ui.add_sized(Vec2::new(ui.available_width() - 85.0, 14.0), slider);
+        let slider_width = (ui.available_width() - right_label_width - spacing).max(20.0);
+        let resp = ui.add_sized(Vec2::new(slider_width, 14.0), slider);
         if resp.drag_stopped() || (resp.clicked() && resp.changed()) {
             action.seek_absolute = Some(cur_pos);
         }
 
-        ui.label(
-            RichText::new(format_time(duration))
-                .monospace()
-                .size(12.0)
-                .color(Color32::from_rgb(160, 165, 180)),
-        );
+        ui.label(duration_text);
     });
 
     ui_child.add_space(4.0);
@@ -378,10 +398,10 @@ fn render_overlay_controls(
 
             ui.add_space(6.0);
 
-            // Aspect Ratio selector
+            // Aspect Ratio selector (Shadcn Select style)
             egui::ComboBox::from_id_salt("video_aspect_mode")
-                .selected_text(state.aspect_ratio_mode.label())
-                .width(90.0)
+                .selected_text(RichText::new(state.aspect_ratio_mode.label()).size(12.0).color(Color32::from_rgb(240, 240, 245)))
+                .width(96.0)
                 .show_ui(ui, |ui| {
                     ui.selectable_value(&mut state.aspect_ratio_mode, AspectRatioMode::Original, "Original");
                     ui.selectable_value(&mut state.aspect_ratio_mode, AspectRatioMode::Ratio16_9, "16:9");
@@ -392,7 +412,7 @@ fn render_overlay_controls(
 
             ui.add_space(6.0);
 
-            // Subtitle track selector
+            // Subtitle track selector (Shadcn Select style)
             let sub_label = if state.current_subtitle_id < 0 {
                 "Subtitles: Off".to_string()
             } else if let Some(t) = state.available_subtitles.iter().find(|t| t.id == state.current_subtitle_id) {
@@ -402,8 +422,8 @@ fn render_overlay_controls(
             };
 
             egui::ComboBox::from_id_salt("video_subtitles")
-                .selected_text(sub_label)
-                .width(110.0)
+                .selected_text(RichText::new(sub_label).size(12.0).color(Color32::from_rgb(240, 240, 245)))
+                .width(115.0)
                 .show_ui(ui, |ui| {
                     if ui.selectable_label(state.current_subtitle_id < 0, "Disable").clicked() {
                         action.change_subtitle = Some(-1);
@@ -421,7 +441,7 @@ fn render_overlay_controls(
 
             ui.add_space(6.0);
 
-            // Audio track switcher
+            // Audio track switcher (Shadcn Select style)
             let audio_label = if let Some(t) = state.available_audio_tracks.iter().find(|t| t.id == state.current_audio_track_id) {
                 format!("Audio: {}", t.name)
             } else {
@@ -429,8 +449,8 @@ fn render_overlay_controls(
             };
 
             egui::ComboBox::from_id_salt("video_audio_tracks")
-                .selected_text(audio_label)
-                .width(110.0)
+                .selected_text(RichText::new(audio_label).size(12.0).color(Color32::from_rgb(240, 240, 245)))
+                .width(115.0)
                 .show_ui(ui, |ui| {
                     for at in &state.available_audio_tracks {
                         if ui.selectable_label(state.current_audio_track_id == at.id, &at.name).clicked() {
@@ -441,18 +461,38 @@ fn render_overlay_controls(
 
             ui.add_space(6.0);
 
-            // Playback speed dropdown
-            let speed_label = format!("{:.2}x", speed);
-            egui::ComboBox::from_id_salt("video_speed")
-                .selected_text(speed_label)
-                .width(60.0)
-                .show_ui(ui, |ui| {
-                    for &spd in &[0.5, 0.75, 1.0, 1.25, 1.5, 2.0] {
-                        if ui.selectable_label((speed - spd).abs() < 0.05, format!("{:.2}x", spd)).clicked() {
-                            action.speed_changed = Some(spd);
-                        }
-                    }
-                });
+            // Playback speed bar with - and + buttons (0.25x to 8.0x, step 0.10)
+            if ui.small_button("➖").on_hover_text("Decrease speed (-0.10x)").clicked() {
+                let new_spd = ((speed - 0.10) * 100.0).round() / 100.0;
+                action.speed_changed = Some(new_spd.clamp(0.25, 8.0));
+            }
+
+            let mut cur_spd = speed;
+            let spd_slider = egui::Slider::new(&mut cur_spd, 0.25..=8.0)
+                .step_by(0.05)
+                .show_value(false)
+                .trailing_fill(true);
+            if ui.add_sized(Vec2::new(65.0, 16.0), spd_slider).changed() {
+                let snapped = if (cur_spd - 1.0).abs() < 0.03 {
+                    1.0
+                } else {
+                    (cur_spd * 20.0).round() / 20.0
+                };
+                action.speed_changed = Some(snapped);
+            }
+
+            if ui.small_button("➕").on_hover_text("Increase speed (+0.10x)").clicked() {
+                let new_spd = ((speed + 0.10) * 100.0).round() / 100.0;
+                action.speed_changed = Some(new_spd.clamp(0.25, 8.0));
+            }
+
+            if ui
+                .small_button(RichText::new(format!("{:.2}x", speed)).size(11.0))
+                .on_hover_text("Reset speed to 1.0x")
+                .clicked()
+            {
+                action.speed_changed = Some(1.0);
+            }
 
             ui.add_space(6.0);
 
@@ -486,17 +526,17 @@ fn render_empty_video_state(
             ui.label(RichText::new("🎬").size(52.0));
             ui.add_space(8.0);
             ui.label(
-                RichText::new("Universal VLC Video Engine")
+                RichText::new("Xorin Studio & Cinema Experience")
                     .size(24.0)
                     .strong()
-                    .color(Color32::from_rgb(255, 160, 30)),
+                    .color(Color32::from_rgb(249, 115, 22)),
             );
 
             ui.add_space(6.0);
             ui.label(
-                RichText::new("Play high-definition videos with full hardware acceleration and native VLC decoder power.")
+                RichText::new("Experience breathtaking 4K/HDR cinema playback and studio-grade acoustics powered by Xorin's next-gen media engine.")
                     .size(14.0)
-                    .color(Color32::from_rgb(170, 175, 190)),
+                    .color(Color32::from_rgb(161, 161, 170)),
             );
 
             ui.add_space(18.0);
@@ -548,24 +588,8 @@ fn render_empty_video_state(
                     .color(Color32::from_rgb(140, 145, 160)),
             );
 
-            ui.add_space(20.0);
-
-            // Backend Status Indicator
-            if let Some(vb) = video_backend {
-                let ver = vb.version();
-                egui::Frame::NONE
-                    .fill(Color32::from_rgb(16, 28, 20))
-                    .stroke(Stroke::new(1.0_f32, Color32::from_rgb(40, 110, 60)))
-                    .inner_margin(egui::Margin::symmetric(14, 8))
-                    .corner_radius(CornerRadius::same(6))
-                    .show(ui, |ui| {
-                        ui.label(
-                            RichText::new(format!("✓ LibVLC Engine Active: {} (Hardware Accelerated)", ver))
-                                .size(12.0)
-                                .color(Color32::from_rgb(80, 220, 130)),
-                        );
-                    });
-            } else {
+            if video_backend.is_none() {
+                ui.add_space(20.0);
                 egui::Frame::NONE
                     .fill(Color32::from_rgb(32, 22, 18))
                     .stroke(Stroke::new(1.0_f32, Color32::from_rgb(130, 60, 40)))
@@ -574,13 +598,13 @@ fn render_empty_video_state(
                     .show(ui, |ui| {
                         ui.vertical(|ui| {
                             ui.label(
-                                RichText::new("⚠️ LibVLC was not found on your system")
+                                RichText::new("⚠️ Media backend was not found on your system")
                                     .strong()
                                     .size(12.0)
                                     .color(Color32::from_rgb(255, 140, 90)),
                             );
                             ui.label(
-                                RichText::new("Please install VLC Media Player from www.videolan.org to activate wide video format support.")
+                                RichText::new("Please install VLC Media Player to activate wide video format support.")
                                     .size(11.0)
                                     .color(Color32::from_rgb(210, 180, 170)),
                             );

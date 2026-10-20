@@ -1,6 +1,6 @@
 [package]
 name = "xorin-player"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 authors = ["Xorin Team"]
 description = "Lightweight, cross-platform, VLC-grade modern audio player in pure Rust"
@@ -15,7 +15,7 @@ rustfft = "6.2"
 rtrb = "0.3"
 rfd = "0.15"
 walkdir = "2.5"
-image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "ico"] }
 ureq = { version = "2.12", features = ["tls"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
