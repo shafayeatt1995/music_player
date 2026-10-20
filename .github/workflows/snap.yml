@@ -1,0 +1,24 @@
+name: Release Snap to Snap Store
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  snapcraft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Snap package
+        uses: snapcore/action-build@v1
+        id: snapcraft
+
+      - name: Publish to Snap Store (Candidate channel)
+        uses: snapcore/action-publish@v1
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+        with:
+          snap: ${{ steps.snapcraft.outputs.snap }}
+          release: candidate
