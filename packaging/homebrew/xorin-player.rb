@@ -10,6 +10,11 @@ cask "xorin-player" do
   app "Xorin Player.app"
   binary "#{appdir}/Xorin Player.app/Contents/MacOS/xorin-player", target: "xorin-player"
 
+  postflight do
+    system_command "/usr/bin/xattr",
+                   args: ["-cr", "#{appdir}/Xorin Player.app"]
+  end
+
   zap trash: [
     "~/.config/xorin-player",
     "~/Library/Application Support/xorin-player",
