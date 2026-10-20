@@ -1,6 +1,6 @@
 cask "xorin-player" do
   version "1.0.0"
-  sha256 "6b4eeeb7ca307f131beff8539b98ff65a9539366df658bf43df5e975a5e30560"
+  sha256 "6b4eeeb7ca307f131beff858a5e0fb08e70868f0dbf6b72b616edd7c080caf7e"
 
   url "https://github.com/shafayeatt1995/music_player/releases/download/v#{version}/xorin-player-macos-universal.dmg"
   name "Xorin Player"

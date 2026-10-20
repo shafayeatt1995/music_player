@@ -32,12 +32,13 @@ elif [ "$OS" = "Linux" ]; then
         if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
             DEB_ARCH="arm64"
         fi
-        echo "Downloading Debian package (.deb)..."
+        echo "Installing Xorin Player via apt..."
         curl -sL "https://github.com/${REPO}/releases/latest/download/xorin-player_1.0.0_${DEB_ARCH}.deb" -o /tmp/xorin.deb
-        sudo apt-get update -y || true
+        sudo apt-get update -y -q || true
         sudo apt-get install -y /tmp/xorin.deb
         rm -f /tmp/xorin.deb
-        echo "✅ Installed successfully! You can find Xorin Player in your app menu or run 'xorin-player'."
+        echo "✅ Installed successfully! Xorin Player is now in your application menu."
+        echo "💡 You can launch it anytime by typing: xorin-player"
     else
         echo "Installing standalone binary..."
         curl -sL "https://github.com/${REPO}/releases/latest/download/xorin-player-linux-${ARCH}.tar.gz" -o /tmp/xorin.tar.gz

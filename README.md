@@ -7,6 +7,29 @@
 ![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux-brightgreen.svg)
 ![Memory Footprint](https://img.shields.io/badge/RAM-~18MB-success.svg)
 
+## 📦 Quick Installation
+
+### 🍏 macOS (via Homebrew)
+```bash
+brew tap shafayeatt1995/tap
+brew install --cask xorin-player
+```
+
+### 🐧 Linux (Debian, Ubuntu, Mint, Pop!_OS)
+To install using `apt`:
+```bash
+# Add Xorin Player APT Repository (one-time setup)
+curl -fsSL https://raw.githubusercontent.com/shafayeatt1995/music_player/main/packaging/apt/setup.sh | sudo bash
+
+# Install Xorin Player
+sudo apt install xorin-player
+```
+
+### ⚡ Universal 1-Line Installer (macOS & Linux)
+```bash
+curl -fsSL https://raw.githubusercontent.com/shafayeatt1995/music_player/main/install.sh | bash
+```
+
 ---
 
 ## ✨ Features
