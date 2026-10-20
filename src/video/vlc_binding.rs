@@ -89,7 +89,7 @@ impl VlcPaths {
 
         #[cfg(target_os = "windows")]
         {
-            let candidates = [
+            let candidates: [(&str, Option<&str>, Option<&str>); 2] = [
                 (
                     "C:\\Program Files\\VideoLAN\\VLC\\libvlc.dll",
                     None,
@@ -116,7 +116,7 @@ impl VlcPaths {
 
         #[cfg(target_os = "linux")]
         {
-            let candidates = [
+            let candidates: [(&str, Option<&str>, Option<&str>); 4] = [
                 (
                     "/usr/lib/x86_64-linux-gnu/libvlc.so.5",
                     None,
