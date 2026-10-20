@@ -158,7 +158,7 @@ impl XorinApp {
             }
         };
 
-        let app = Self {
+        let mut app = Self {
             audio: audio_backend,
             video: video_backend,
             playlist: Playlist::new(),
@@ -201,6 +201,20 @@ impl XorinApp {
             backend.send_command(AudioCommand::SetEqEnabled(app.equalizer_state.enabled));
             backend.send_command(AudioCommand::SetEqPreamp(app.equalizer_state.preamp));
             backend.send_command(AudioCommand::SetEqBands(app.equalizer_state.bands));
+        }
+
+        // Open file passed via command line (Open With / Right click on OS)
+        let args: Vec<String> = std::env::args().collect();
+        if args.len() > 1 {
+            let p = std::path::Path::new(&args[1]);
+            if p.exists() {
+                let prev_len = app.playlist.len();
+                app.playlist.add_file(p);
+                if app.playlist.len() > prev_len {
+                    app.playlist.play_index(app.playlist.len() - 1);
+                    app.play_current_track();
+                }
+            }
         }
 
         app

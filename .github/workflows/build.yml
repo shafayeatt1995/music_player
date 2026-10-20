@@ -110,6 +110,12 @@ jobs:
             tar -czvf "${{ matrix.output_name }}.tar.gz" "${{ matrix.output_name }}"
           fi
 
+          # Build .deb package on Linux x86_64
+          if [ "${{ matrix.target }}" = "x86_64-unknown-linux-gnu" ]; then
+            cd ..
+            ./packaging/linux/build-deb.sh "dist/${{ matrix.output_name }}" "1.0.0" "amd64" "dist"
+          fi
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -118,10 +124,12 @@ jobs:
           retention-days: 7
 
   macos-universal:
-    name: Build macOS Universal Binary (Intel + Apple Silicon)
+    name: Build macOS Universal Binary & App Bundle (.app)
     runs-on: macos-latest
     needs: build
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: xorin-player-macos-arm64
@@ -130,15 +138,21 @@ jobs:
         with:
           name: xorin-player-macos-x86_64
           path: ./x86_64
-      - name: Create Universal Binary with lipo
+      - name: Create Universal Binary with lipo and package .app bundle
         run: |
           mkdir -p ./universal
           chmod +x ./arm64/xorin-player-macos-arm64 ./x86_64/xorin-player-macos-x86_64
           lipo -create -output ./universal/xorin-player-macos-universal ./arm64/xorin-player-macos-arm64 ./x86_64/xorin-player-macos-x86_64
           chmod +x ./universal/xorin-player-macos-universal
+          
+          # Create universal binary zip
           cd ./universal
           zip xorin-player-macos-universal.zip xorin-player-macos-universal
-      - name: Upload Universal Binary
+          cd ..
+
+          # Create native macOS .app bundle with Info.plist & AppIcon
+          ./packaging/macos/bundle-macos.sh "./universal/xorin-player-macos-universal" "./universal"
+      - name: Upload Universal Binary & App Bundle
         uses: actions/upload-artifact@v4
         with:
           name: xorin-player-macos-universal
@@ -163,7 +177,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p ./release-dist
-          find ./release-artifacts -type f \( -name "*.exe" -o -name "*.zip" -o -name "*.tar.gz" -o -name "xorin-player-linux*" -o -name "xorin-player-macos*" \) -exec cp {} ./release-dist/ \;
+          find ./release-artifacts -type f \( -name "*.exe" -o -name "*.zip" -o -name "*.tar.gz" -o -name "*.deb" -o -name "xorin-player-linux*" -o -name "xorin-player-macos*" \) -exec cp {} ./release-dist/ \;
           ls -la ./release-dist
 
       - name: Generate Release Tag & Name
@@ -194,7 +208,14 @@ jobs:
           body: |
             ## 🎵 Xorin Player — High-Fidelity Audio & Cinema Video Player
 
-            Welcome to the latest release of **Xorin Player**! Built with Rust and modern aesthetics, featuring studio-grade Poweramp audio processing and cinema video engine.
+            Welcome to the latest release of **Xorin Player**! Built with Rust and modern aesthetics, featuring studio-grade Poweramp audio processing, cinema video engine, and OS file associations.
+
+            ---
+
+            ### ⚡ One-Line Quick Install (macOS & Linux)
+            ```bash
+            curl -fsSL https://raw.githubusercontent.com/shafayeatt1995/music_player/main/install.sh | bash
+            ```
 
             ---
 
@@ -202,48 +223,48 @@ jobs:
 
             | Platform / Architecture | Recommended Download | Description |
             | :--- | :--- | :--- |
-            | 🍏 **macOS Universal** | [`xorin-player-macos-universal.zip`](#) | Works on both Apple Silicon (M1/M2/M3/M4) & Intel Macs |
-            | 🍏 **macOS Apple Silicon** | [`xorin-player-macos-arm64.zip`](#) | Optimized for M1/M2/M3/M4 |
-            | 🍏 **macOS Intel** | [`xorin-player-macos-x86_64.zip`](#) | For Intel-based Macs |
+            | 🍏 **macOS Universal App** | [`xorin-player-macos-app.zip`](#) | Native `.app` bundle with full Open-With & icon support |
+            | 🍏 **macOS Universal Binary** | [`xorin-player-macos-universal.zip`](#) | Standalone command-line binary for all Macs |
+            | 🐧 **Debian / Ubuntu** | [`xorin-player_1.0.0_amd64.deb`](#) | Native `.deb` package (App menu & right-click Open-With) |
+            | 🐧 **Linux (x86_64)** | [`xorin-player-linux-x86_64.tar.gz`](#) | Standalone 64-bit Linux binary |
+            | 🐧 **Linux ARM64** | [`xorin-player-linux-arm64.tar.gz`](#) | 64-bit ARM Linux (Raspberry Pi 4/5, Pine64) |
             | 🪟 **Windows (x86_64)** | [`xorin-player-windows-x86_64.exe`](#) | 64-bit Windows Intel & AMD |
             | 🪟 **Windows Snapdragon** | [`xorin-player-windows-arm64-snapdragon.exe`](#) | Native ARM64 for Snapdragon X Elite / Surface |
-            | 🐧 **Linux (x86_64)** | [`xorin-player-linux-x86_64.tar.gz`](#) | 64-bit Linux (Ubuntu, Debian, Fedora, Arch) |
-            | 🐧 **Linux ARM64** | [`xorin-player-linux-arm64.tar.gz`](#) | 64-bit ARM Linux (Raspberry Pi 4/5, Pine64) |
 
             ---
 
-            ### 🚀 Installation Instructions
+            ### 🚀 Installation & "Open With" Setup
 
-            #### 🍏 macOS (Apple Silicon / Intel)
-            1. Download `xorin-player-macos-universal.zip` (or your specific architecture).
-            2. Extract the zip file:
-               ```bash
-               unzip xorin-player-macos-universal.zip
-               ```
-            3. Grant execute permission and run:
-               ```bash
-               chmod +x xorin-player-macos-universal
-               ./xorin-player-macos-universal
-               ```
-            > *Note: If macOS Gatekeeper shows a security prompt on first launch, right-click the file and select **Open**, or run `xattr -d com.apple.quarantine xorin-player-macos-universal` in Terminal.*
+            #### 🍏 macOS (Homebrew or App Bundle)
+            **Option A: Install via Homebrew**
+            ```bash
+            brew install --cask https://raw.githubusercontent.com/shafayeatt1995/music_player/main/packaging/homebrew/xorin-player.rb
+            ```
+
+            **Option B: Manual Download**
+            1. Download `xorin-player-macos-app.zip` and unzip it.
+            2. Move `Xorin Player.app` to your `/Applications` folder.
+            3. Right-click any song or video ➜ **Open With** ➜ **Xorin Player**.
+
+            #### 🐧 Linux (Debian / Ubuntu / Raspberry Pi)
+            **Option A: Install `.deb` package (System integration & Open With)**
+            ```bash
+            sudo dpkg -i xorin-player_1.0.0_amd64.deb
+            # or with apt:
+            sudo apt install ./xorin-player_1.0.0_amd64.deb
+            ```
+            *Xorin Player will now show in your desktop app menu and in Right-Click ➜ **Open With** for all audio/video files!*
+
+            **Option B: Standalone Tarball**
+            ```bash
+            tar -xzvf xorin-player-linux-x86_64.tar.gz
+            sudo mv xorin-player-linux-x86_64 /usr/local/bin/xorin-player
+            ```
 
             #### 🪟 Windows (Intel/AMD & Snapdragon ARM64)
             1. Download `xorin-player-windows-x86_64.exe` (or `xorin-player-windows-arm64-snapdragon.exe` for Snapdragon ARM devices).
             2. Double-click the `.exe` file to launch **Xorin Player**. No installer needed!
-
-            #### 🐧 Linux (Ubuntu, Debian, Fedora, Arch, Raspberry Pi)
-            1. Download the corresponding `.tar.gz` archive for your CPU (`x86_64` or `arm64`).
-            2. Extract and run:
-               ```bash
-               tar -xzvf xorin-player-linux-x86_64.tar.gz
-               chmod +x xorin-player-linux-x86_64
-               ./xorin-player-linux-x86_64
-               ```
-            3. *Dependencies (if not already installed)*:
-               ```bash
-               # Ubuntu / Debian
-               sudo apt update && sudo apt install -y libasound2 libx11-6 libxcursor1 libxrandr2 libxi6 libvlc-dev
-               ```
+            3. To associate media files: Right-click any MP3/MP4 ➜ **Open with** ➜ **Choose another app** ➜ select `xorin-player-windows-x86_64.exe`.
 
             ---
             *Enjoy music and videos with **Xorin Player**!*
