@@ -8,6 +8,7 @@ description: |
   Features a 10-band equalizer, playlist support, playback speed control, 
   and hardware-accelerated cinema video playback.
 
+icon: snap/icon.png
 grade: stable
 confinement: strict
 
