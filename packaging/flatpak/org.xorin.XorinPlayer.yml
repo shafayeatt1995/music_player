@@ -1,4 +1,4 @@
-app-id: com.shafayeatt.XorinPlayer
+app-id: org.xorin.XorinPlayer
 runtime: org.freedesktop.Platform
 runtime-version: '23.08'
 sdk: org.freedesktop.Sdk
@@ -22,9 +22,9 @@ modules:
     buildsystem: simple
     build-commands:
       - install -D -m 755 xorin-player /app/bin/xorin-player
-      - install -D -m 644 packaging/linux/xorin-player.desktop /app/share/applications/com.shafayeatt.XorinPlayer.desktop
-      - install -D -m 644 dark-logo.png /app/share/icons/hicolor/512x512/apps/com.shafayeatt.XorinPlayer.png
-      - install -D -m 644 packaging/flatpak/com.shafayeatt.XorinPlayer.metainfo.xml /app/share/metainfo/com.shafayeatt.XorinPlayer.metainfo.xml
+      - install -D -m 644 packaging/linux/xorin-player.desktop /app/share/applications/org.xorin.XorinPlayer.desktop
+      - install -D -m 644 dark-logo.png /app/share/icons/hicolor/512x512/apps/org.xorin.XorinPlayer.png
+      - install -D -m 644 packaging/flatpak/org.xorin.XorinPlayer.metainfo.xml /app/share/metainfo/org.xorin.XorinPlayer.metainfo.xml
     sources:
       - type: archive
         url: https://github.com/shafayeatt1995/music_player/releases/download/v1.0.0/xorin-player-linux-x86_64.tar.gz
@@ -35,4 +35,4 @@ modules:
       - type: file
         path: ../dark-logo.png
       - type: file
-        path: com.shafayeatt.XorinPlayer.metainfo.xml
+        path: org.xorin.XorinPlayer.metainfo.xml

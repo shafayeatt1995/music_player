@@ -23,8 +23,8 @@ sudo snap install xorin-player
 
 ### 📦 Linux (Flatpak / Flathub)
 ```bash
-flatpak install flathub com.shafayeatt.XorinPlayer
-flatpak run com.shafayeatt.XorinPlayer
+flatpak install flathub XorinPlayer
+flatpak run org.xorin.XorinPlayer
 ```
 
 ### 🐧 Linux (Debian, Ubuntu, Mint via APT)
