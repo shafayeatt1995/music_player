@@ -239,7 +239,8 @@ jobs:
             #### 🍏 macOS (Homebrew or App Bundle)
             **Option A: Install via Homebrew**
             ```bash
-            brew install --cask https://raw.githubusercontent.com/shafayeatt1995/music_player/main/packaging/homebrew/xorin-player.rb
+            brew tap shafayeatt1995/tap
+            brew install --cask xorin-player
             ```
 
             **Option B: Manual Download**
