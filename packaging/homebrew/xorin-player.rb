@@ -1,10 +1,10 @@
 cask "xorin-player" do
   version "1.0.0"
-  sha256 :no_check
+  sha256 "6b4eeeb7ca307f131beff8539b98ff65a9539366df658bf43df5e975a5e30560"
 
-  url "https://github.com/shafayeatt1995/music_player/releases/download/v#{version}/xorin-player-macos-app.zip"
+  url "https://github.com/shafayeatt1995/music_player/releases/download/v#{version}/xorin-player-macos-universal.dmg"
   name "Xorin Player"
-  desc "Lightweight, cross-platform, VLC-grade audio & cinema video player"
+  desc "Lightweight, cross-platform audio and cinema video player"
   homepage "https://github.com/shafayeatt1995/music_player"
 
   app "Xorin Player.app"
